@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Roles {
+  User
+  Admin
+}
+
+model User {
+  id           Int            @id @default(autoincrement())
+  createdAt    DateTime       @default(now())
+  login        String
+  email        String
+  password     String
+  role         Roles          @default(User)
+  userSessions UserSessions[]
+  userInfo     UserInfo?      @relation()
+  langCourses  LangCourses[]
+  payment      PaymentMethod? @relation()
+  buyed        BuyedCouse[]
+}
+
+model UserSessions {
+  id            Int      @id @default(autoincrement())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int
+  refresh_token String
+  createdAt     DateTime @default(now())
+}
+
+model UserInfo {
+  id        Int    @id @default(autoincrement())
+  user      User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int    @unique
+  firstName String
+  lastName  String
+  birthdate String
+  phone     String
+}
+
+model PaymentMethod {
+  id         Int    @id @default(autoincrement())
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int    @unique
+  cardNumber String
+  cardHolder String
+  cardDate   String
+  cvv        String
+}
+
+enum Langs {
+  En
+  De
+  Fra
+  Esp
+  Ita
+}
+
+enum CoursesFormats {
+  online
+  offline
+}
+
+model LangCourses {
+  id               Int            @id @default(autoincrement())
+  title            String
+  description      String
+  price            String
+  amountOfLessons  String
+  timeForLesson    String
+  timeForAllCourse String
+  imgURL           String
+  lang             Langs
+  format           CoursesFormats
+  users            User[]
+  buyed            BuyedCouse[]
+}
+
+model BuyedCouse {
+  id       Int          @id @default(autoincrement())
+  user     User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int          @unique
+  course   LangCourses? @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId Int          @unique
+}
